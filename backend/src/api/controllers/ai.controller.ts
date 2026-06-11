@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { AIService } from "../../services/ai.service";
+import { AIService } from "../../services/AI.service";
 
 export class AIController {
     private aiService: AIService
@@ -34,7 +34,6 @@ export class AIController {
             });
         }
     }
-
 
     streamHandler = async (
         req: Request,

@@ -4,10 +4,11 @@ export interface ConversationType {
     id?: string;
     userID: string;
     title?: string;
+    summary?: string;
     messages: MessageType[];
     metadata?: Record<string, any>;
-    createdAt: Date;
-    updatedAt: Date;
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 
 
@@ -17,5 +18,5 @@ export interface MessageType {
     role: "user" | "admin" | "assistant";
     content: string;
     tokenCount: number;
-    createdAt: string;
+    createdAt?: string;
 }

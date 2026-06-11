@@ -138,12 +138,12 @@ export class ConvoRepository implements ConvoInterface {
 
     // ── update ───────────────────────────────────────────────────────────────
 
-    async update(convoID: string, title: string): Promise<ConversationType> {
+    async update(convoID: string, title: string, summary: string): Promise<ConversationType> {
         return withRetry(async () => {
             try {
                 await this._prisma.conversation.update({
                     where: { id: convoID },
-                    data: { title },
+                    data: { title, summary },
                 });
             } catch (error) {
                 if (
@@ -191,6 +191,7 @@ export class ConvoRepository implements ConvoInterface {
                         orderBy: { createdAt: "asc" },
                     },
                 },
+
             });
 
             if (!convo) {
@@ -199,6 +200,29 @@ export class ConvoRepository implements ConvoInterface {
 
             return this._mapConversation(convo);
         }, "getConvo");
+    }
+
+    // ── getConvoByUserID ─────────────────────────────────────────────────────────────
+
+    async getConvoByUserID(userID: string): Promise<ConversationType> {
+        return withRetry(async () => {
+            const convo = await this._prisma.conversation.findFirst({
+                where: { userID: userID },
+                include: {
+                    messages: {
+                        orderBy: { createdAt: "desc" },
+                        take: 20,
+                    },
+
+                },
+            });
+
+            if (!convo) {
+                throw new ConvoNotFoundError(userID);
+            }
+
+            return this._mapConversation(convo);
+        }, "getConvoByUserID");
     }
 
     // ── getConvos ────────────────────────────────────────────────────────────

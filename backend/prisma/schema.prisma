@@ -9,9 +9,10 @@ datasource db {
 
 model Conversation {
   id        String   @id @default(uuid()) @db.Uuid
-  userID   String   @db.Uuid
+  userID   String   
 
   title     String?  @default("New Conversation")
+  summary   String?
   metadata  Json     @default("{}")
 
   createdAt DateTime @default(now())

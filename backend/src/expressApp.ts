@@ -5,8 +5,9 @@ import express, { NextFunction, Request, Response } from "express";
 import { AIRoutes } from "./api/routes/ai.routes";
 import cors from "cors";
 import { AIController } from "./api/controllers/ai.controller";
-import { AIService } from "./services/ai.service";
+import { AIService } from "./services/AI.service";
 import { corsOptions } from "./config/cors.config";
+import { ConvoRepository } from "./repository/convo.repository";
 
 export const expressApp = async () => {
   const app = express();
@@ -20,8 +21,9 @@ export const expressApp = async () => {
   });
 
   const ollamaClient = new Ollama({ host: 'http://127.0.0.1:11434' })
+  const convoRepository = new ConvoRepository();
 
-  const aiRoutes = new AIRoutes(new AIController(new AIService(ollamaClient)))
+  const aiRoutes = new AIRoutes(new AIController(new AIService(ollamaClient, convoRepository)))
   app.use("/", aiRoutes.router)
 
   app.use(HandleErrorWithLogger);
