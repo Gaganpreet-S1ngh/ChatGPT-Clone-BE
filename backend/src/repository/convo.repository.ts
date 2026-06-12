@@ -138,7 +138,7 @@ export class ConvoRepository implements ConvoInterface {
 
     // ── update ───────────────────────────────────────────────────────────────
 
-    async update(convoID: string, title: string, summary: string): Promise<ConversationType> {
+    async update(convoID: string, title?: string, summary?: string): Promise<ConversationType> {
         return withRetry(async () => {
             try {
                 await this._prisma.conversation.update({
@@ -221,7 +221,9 @@ export class ConvoRepository implements ConvoInterface {
                 throw new ConvoNotFoundError(userID);
             }
 
-            return this._mapConversation(convo);
+            const mapped = this._mapConversation(convo);
+            mapped.messages.reverse(); // restore chronological order
+            return mapped;
         }, "getConvoByUserID");
     }
 

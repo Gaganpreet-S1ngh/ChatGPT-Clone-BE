@@ -41,11 +41,11 @@ export class AIController {
         next: NextFunction
     ) => {
         try {
-            const { role, prompt } = req.body;
+            const { prompt } = req.body;
 
-            if (!role || !prompt) {
+            if (!prompt) {
                 res.status(400).json({
-                    error: "role and prompt are required",
+                    error: "prompt is required",
                 });
 
                 return
@@ -59,7 +59,7 @@ export class AIController {
             // Send headers immediately
             res.flushHeaders?.();
 
-            const stream = await this.aiService.streamAnswer(role, prompt);
+            const stream = await this.aiService.streamAnswer(prompt);
 
             for await (const part of stream) {
                 const content = part?.message?.content ?? "";

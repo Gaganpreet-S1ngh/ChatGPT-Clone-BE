@@ -30,7 +30,7 @@ export class AIService {
         return response.message.content;
     }
 
-    async streamAnswer(role: string, prompt: string): Promise<any> {
+    async streamAnswer(prompt: string): Promise<any> {
 
         const userID = "RandomUser1";
         // find if conversation exists
@@ -54,7 +54,7 @@ export class AIService {
                     messages: []
                 });
 
-                // new conversation
+                // new conversation also create a title here
                 conversation = {
                     id: convoID,
                     userID,
@@ -69,9 +69,8 @@ export class AIService {
         }
 
         // Save user message now
-
         const userMessage: MessageType = {
-            converstaionID: "",
+            converstaionID: convoID,
             role: "user",
             content: prompt,
             tokenCount: 0
@@ -132,6 +131,13 @@ export class AIService {
 
             try {
                 await self._repo.addMessage(convoID, assistantMessage);
+                // Here save the updated summary (Do it async in the background)
+                const summary = await self.updateSummary(
+                    conversation?.summary || "New conversation",
+                    [userMessage, assistantMessage]
+                );
+
+                await self._repo.update(convoID, "", summary);
 
             } catch (error) {
                 logger.error(error, "Error saving assistant message!")
@@ -146,6 +152,27 @@ export class AIService {
 
     // Helper functions
 
+    private async updateSummary(
+        oldSummary: string,
+        newMessages: MessageType[]
+    ): Promise<string> {
 
+        const response = await this.ollama.chat({
+            model: this.aiModel,
+            messages: [
+                {
+                    role: "system",
+                    content: `Update the conversation summary.\nExisting summary:\n${oldSummary}\n\nIncorporate the new messages below and return an updated summary in 150 words only strictly.`
+                },
+                {
+                    role: "user",
+                    content: newMessages
+                        .map(m => `${m.role}: ${m.content}`)
+                        .join("\n")
+                }
+            ]
+        });
+        return response.message.content;
+    }
 
 }
