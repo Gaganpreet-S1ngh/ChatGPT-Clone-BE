@@ -55,9 +55,23 @@ export class AIService {
                 });
 
                 // new conversation also create a title here
+
+                const convoTitle = await this.ollama.chat({
+                    model: this.aiModel,
+                    messages: [
+                        {
+                            role: "user",
+                            content: `Please make a suitable title for this user question:\n${prompt}\n\nOnly provide a 3 or 4 word title`
+                        }
+                    ]
+                })
+
+                console.log(convoTitle)
+
                 conversation = {
                     id: convoID,
                     userID,
+                    title: convoTitle.message.content,
                     messages: [],
                 }
             } catch (error) {
@@ -133,12 +147,11 @@ export class AIService {
                 await self._repo.addMessage(convoID, assistantMessage);
                 // Here save the updated summary (Do it async in the background)
                 const summary = await self.updateSummary(
-                    conversation?.summary || "New conversation",
+                    conversation?.summary || "No summary",
                     [userMessage, assistantMessage]
                 );
 
-                await self._repo.update(convoID, "", summary);
-
+                await self._repo.update(convoID, conversation?.title || "", summary);
             } catch (error) {
                 logger.error(error, "Error saving assistant message!")
                 throw error;
